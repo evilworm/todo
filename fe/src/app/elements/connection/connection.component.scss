@@ -1,0 +1,23 @@
+.connected {
+  color: white;
+}
+
+.disconnected {
+  color: red;
+}
+
+@keyframes pulsate {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1); /* Scale the icon up to 110% of its original size */
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.pulsate {
+  animation: pulsate 1s infinite; /* infinite makes the animation repeat indefinitely */
+}

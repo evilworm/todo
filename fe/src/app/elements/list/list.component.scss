@@ -1,0 +1,71 @@
+@use '@angular/material' as mat;
+
+mat-selection-list {
+  mat-list-option {
+    padding-left: 10px;
+  }
+}
+
+.with-margin {
+  margin-left:15px;
+}
+
+.mat-list-option:hover .mat-icon-button {
+  visibility: visible;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  .item-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    .cost {
+      margin-left: auto;
+      padding-right: 16px;
+      color: #666;
+      font-size: smaller;
+    }
+  }
+}
+
+.inputs {
+  display: flex;
+  input {
+    outline: none;
+
+    &.name {
+      width: 60%;
+    }
+
+    &.cost {
+      width: 40%;
+    }
+  }
+}
+
+button {
+  position: relative;
+  transform: scale(0.7);
+}
+
+button + button {
+  margin-left: -10px;
+}
+
+
+.mat-form-field {
+  height: 20px; // Adjust the height as needed
+}
+
+/* Add to styles.css or your component's CSS */
+
+.mat-list-option:hover .edit-button {
+  visibility: visible;
+}
+
+mat-selection-list {
+  padding: 0;
+}

@@ -1,0 +1,5 @@
+<button mat-icon-button aria-label="Connection state">
+  <mat-icon [ngClass]="{'disconnected': !isConnected, 'connected': isConnected, 'pulsate': !isConnected}">
+    settings_input_antenna <!-- This is a material icon that looks like an antenna -->
+  </mat-icon>
+</button>

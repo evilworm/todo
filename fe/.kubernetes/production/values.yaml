@@ -1,0 +1,41 @@
+image:
+  repository: gitlab.gign.lv:5050/to-do/frontend
+  tag: "{{ DEPLOY_VERSION_TAG }}"
+
+pod:
+  terminationGracePeriodSeconds: 30
+  replicas: 1
+  resources:
+    requests:
+      memory: 100Mi
+      cpu: 10m
+    limits:
+      memory: 4096Mi
+      cpu: 1000m
+  #readinessProbe:
+  #  path: /readiness
+  #  port: 80
+  #livenessProbe:
+  #  path: /readiness
+  #  port: 80
+
+service:
+  port: 80
+  targetPort: 80
+
+migration:
+  enabled: false
+
+ingress:
+  enabled: true
+  useTraefikCRD: true
+  useAuthelia: false
+  routes:
+    - host: todo.wc.lv
+      paths:
+        - path: /socket.io/
+          service:
+            name: backend-app
+        - pathPrefix: /
+          priority: 1
+

@@ -1,0 +1,42 @@
+image:
+  repository: gitlab.gign.lv:5050/to-do/backend
+  tag: '{{ DEPLOY_VERSION_TAG }}'
+
+pod:
+  terminationGracePeriodSeconds: 60
+  replicas: 1
+  resources:
+    requests:
+      memory: 1024Mi
+      cpu: 10m
+    limits:
+      memory: 4096Mi
+      cpu: 1000m
+  readinessProbe:
+    path: /api/readiness
+    port: 3000
+  livenessProbe:
+    path: /api/readiness
+    port: 3000
+
+service:
+  port: 80
+  targetPort: 3000
+
+migration:
+  enabled: true
+  tag: '{{ DEPLOY_MIGRATION_TAG }}'
+  command: 'npm run migration:run'
+
+ingress:
+  enabled: false
+
+env:
+  NODE_ENV: 'production'
+  PORT: '3000'
+  DB_HOST: '10.10.0.2'
+  DB_PORT: '3306'
+  DB_NAME: 'todo'
+  DB_USER: 'todo'
+  DB_PASS: 'todo'
+  VERSION: '{{ DEPLOY_VERSION_TAG }}'

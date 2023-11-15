@@ -1,0 +1,68 @@
+<mat-selection-list *ngIf="items.length > 0" cdkDropList (cdkDropListDropped)="drop($event)" (selectionChange)="onChange($event)" [class.with-margin]="parentId">
+  <ng-container *ngFor="let item of items | filterComplete: filterComplete; let i = index">
+    <mat-list-option [value]="item"
+    (mouseenter)="hoveredIndex = i"
+    (mouseleave)="hoveredIndex = null"
+    cdkDrag
+    (mousedown)="onDragStart($event)"
+    (cdkDragStarted)="isDragging=true"
+    (cdkDragEnded)="isDragging=false"
+    [selected]="item.done">
+      <div cdkDragHandle>
+        <div *ngIf="!editIndices.has(i); else editInput" class="item">
+          <div class="item-content" *ngIf="item.name; else empty">
+            <span class="name">{{ item.name }}</span>
+            <span class="cost" *ngIf="hoveredIndex !== i">{{ itemCost(i) }}</span>
+          </div>
+          <ng-template #empty>
+            <div class="item-content">
+              <span class="name"><i>empty item</i></span>
+              <span class="cost" *ngIf="hoveredIndex !== i">{{ itemCost(i) }}</span>
+            </div>
+          </ng-template>
+          <div>
+            <button mat-icon-button
+                    click-stop-propagation
+                    *ngIf="hoveredIndex === i"
+                    (click)="enableEdit(i)"
+                    matTooltip="Edit item">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button
+                    click-stop-propagation
+                    *ngIf="hoveredIndex === i"
+                    (click)="addChild(i)"
+                    matTooltip="Add new child item">
+              <mat-icon>add</mat-icon>
+            </button>
+            <button mat-icon-button
+                    click-stop-propagation
+                    *ngIf="hoveredIndex === i"
+                    (click)="deleteItem(i)"
+                    matTooltip="Delete item">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <ng-template #editInput>
+          <div class="item" (mousedown)="$event.stopPropagation()" (mouseup)="$event.stopPropagation()">
+            <div class="inputs">
+              <input class="name" click-stop-propagation [(ngModel)]="item.name" (keydown)="$event.stopPropagation()" placeholder="name">
+              <input class="cost" click-stop-propagation [(ngModel)]="item.cost" (keydown)="$event.stopPropagation()" placeholder="cost">
+            </div>
+            <div>
+              <button matSuffix mat-icon-button click-stop-propagation (click)="saveItem(i)" class="save-button">
+                  <mat-icon>save</mat-icon>
+              </button>
+              <button matSuffix mat-icon-button click-stop-propagation (click)="cancel(i)">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          </div>
+        </ng-template>
+      </div>
+    </mat-list-option>
+    <app-list [parentId]="item.id" [uuid]="uuid" [todoItems]="item.items ?? []" [filterComplete]="filterComplete" (totalCost)="addToTotalCost(i, $event)"></app-list>
+  </ng-container>
+</mat-selection-list>

@@ -1,0 +1,52 @@
+stages:
+  - deploy-production
+
+.package_image:
+  image: docker:git
+  tags:
+    - docker-builder
+  only:
+    - master
+  script:
+    # Docker login
+    - docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY}
+    # Set proper basedir
+    - cd ${BASE_DIR}
+    # Docker build
+    - docker build --pull -f ${DOCKERFILE} -t ${IMAGE_NAME_TAG} .
+    - docker push ${IMAGE_NAME_TAG}
+
+package_prod_image:
+  extends: .package_image
+  stage: deploy-production
+  when: manual
+  only:
+    - master
+  variables:
+    BASE_DIR: .
+    DOCKERFILE: ./Dockerfile
+    IMAGE_NAME_TAG: ${CI_REGISTRY_IMAGE}:${CI_PIPELINE_ID}-production
+
+deploy_production:
+  image: dtzar/helm-kubectl:3.11.1
+  stage: deploy-production
+  needs: ["package_prod_image"]
+  only:
+    - master
+  variables:
+    DEPLOY_VERSION_TAG: ${CI_PIPELINE_ID}-production
+    DEPLOY_MIGRATION_TAG: ${CI_PIPELINE_ID}-stage
+  tags:
+    - docker-builder
+  dependencies:
+    - package_prod_image
+  script:
+    #- doctl kubernetes cluster kubeconfig save $KUBERNETES_CLUSTER
+    - cat "$KUBECONFIG" > /tmp/kubeconfig.yaml
+    - chmod go-rwx /tmp/kubeconfig.yaml
+    - export KUBECONFIG=/tmp/kubeconfig.yaml
+    - bash -l .kubernetes/process_variables.sh .kubernetes/production
+    - helm repo add gign https://gign.lv/helm/
+    - helm repo update
+    - helm upgrade --create-namespace -n kube-${CI_PROJECT_NAMESPACE}-production --install ${CI_PROJECT_NAME} gign/app -f .kubernetes/production/values.yaml
+    - kubectl rollout status deployment/${CI_PROJECT_NAME}-app -n kube-${CI_PROJECT_NAMESPACE}-production --timeout=300s

@@ -1,0 +1,42 @@
+
+<ng-container *ngIf="todo">
+  <mat-card>
+    <mat-card-content>Filters: <label><input type="checkbox" [(ngModel)]="filterComplete"> Show only incomplete tasks</label></mat-card-content>
+  </mat-card>
+
+  <mat-card>
+    <mat-card-content>
+      <app-list [uuid]="todo.uuid" [todoItems]="todo.items" [filterComplete]="filterComplete"></app-list>
+    </mat-card-content>
+    <button click-stop-propagationz mat-icon-button class="add-button small-icon-button"
+    (click)="addItem(); $event.stopPropagation()"
+    matTooltip="Add new item"
+  ><mat-icon>add</mat-icon></button>
+  </mat-card>
+
+</ng-container>
+
+<mat-card *ngIf="error" class="error-card">
+  <mat-card-header>
+    <mat-card-title>Error</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <p>{{ error }}</p>
+  </mat-card-content>
+  <mat-card-actions>
+    <button *ngIf="code <= 10" mat-button (click)="loadTodo()">Retry</button>
+    <button mat-button (click)="createTodo()">Create new TODO list</button>
+  </mat-card-actions>
+</mat-card>
+
+<mat-card *ngIf="loading">
+  <mat-card-content>
+    <div class="loading-wrapper">
+      <mat-progress-spinner
+        color="primary"
+        mode="indeterminate">
+      </mat-progress-spinner>
+    </div>
+  </mat-card-content>
+</mat-card>
+

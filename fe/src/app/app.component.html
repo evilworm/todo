@@ -1,0 +1,17 @@
+<mat-toolbar color="primary">
+  <button mat-icon-button [matMenuTriggerFor]="menu" class="example-icon" aria-label="Example icon-button with menu icon">
+    <mat-icon>menu</mat-icon>
+  </button>
+  <span>TODO App</span>
+  <span class="spacer"></span>
+  <app-connection></app-connection>
+</mat-toolbar>
+
+<mat-menu #menu="matMenu">
+  <button mat-menu-item (click)="home()">
+    <mat-icon>home</mat-icon>
+    <span>Home</span>
+  </button>
+</mat-menu>
+
+<router-outlet></router-outlet>

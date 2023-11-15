@@ -1,0 +1,48 @@
+---
+version: '3.3'
+
+services:
+  todo-fe:
+    image: node:20
+    restart: always
+    user: ${USER_ID}
+    volumes:
+      - ./fe:/usr/src/app
+    working_dir: /usr/src/app
+    ports:
+      - 7001:4200
+    command: npm run start
+
+  todo-be:
+    deploy:
+      replicas: 1
+    image: node:20-alpine
+    restart: unless-stopped
+    user: ${USER_ID}
+    volumes:
+        - ./be:/usr/src/app
+    working_dir: /usr/src/app
+    ports:
+        - 7002:3000
+    command: npm run start:dev
+
+  db:
+    image: mariadb:10.7
+    restart: unless-stopped
+    user: ${USER_ID}
+    volumes:
+      - ./.dev/db:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
+
+  adminer:
+    image: adminer
+    restart: unless-stopped
+    ports:
+      - 7003:8080
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+      ADMINER_DESIGN: "pepa-linha" # You can choose a design theme

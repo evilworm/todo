@@ -1,0 +1,29 @@
+.error-card {
+  max-width: 400px;
+  margin: 20px auto;
+  border: 1px solid #f44336; /* red border color */
+  background-color: #ffebee; /* light red background color */
+}
+
+mat-card-title {
+  color: #f44336; /* red text color */
+}
+
+.loading-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px; /* Adjust as necessary */
+}
+
+mat-progress-spinner {
+  margin-right: 10px;
+}
+
+mat-card {
+  margin:5px 0;
+}
+
+app-list {
+  padding-left: -15px;
+}
