@@ -3,9 +3,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { CacheModule } from './cache/cache.module';
 import { ConnModule } from './conn/conn.module';
 import { DB_HOST, DB_NAME, DB_PASS, DB_PORT, DB_USER } from './constants';
+import { SentryModule } from './sentry/sentry.module';
 import { TodoModule } from './todo/todo.module';
+import { TypeormLogger } from './typeorm-logger';
 
 @Module({
   imports: [
@@ -26,10 +29,12 @@ import { TodoModule } from './todo/todo.module';
         migrations: [__dirname + '/migrations/**/*.{ts,js}'],
         migrationsTableName: 'migrations',
         autoLoadEntities: false,
-        // logging: ['error', 'warn'],
         logging: true,
+        logger: new TypeormLogger(),
       }),
     }),
+    SentryModule,
+    CacheModule,
   ],
   controllers: [AppController],
   providers: [AppService],

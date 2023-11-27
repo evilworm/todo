@@ -1,8 +1,8 @@
-import { Socket } from 'socket.io-client';
+import { Client } from './client';
 
 export interface MessageWithType {
   type: string;
   id: string;
-  socket: Socket;
+  client: Client;
   data?: any;
 }

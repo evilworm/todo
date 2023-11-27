@@ -1,4 +1,4 @@
-import { ConsoleLogger } from '@nestjs/common';
+import { ConsoleLogger, UseFilters } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -7,72 +7,56 @@ import {
   SubscribeMessage,
   WebSocketGateway,
 } from '@nestjs/websockets';
+import * as Sentry from '@sentry/node';
 import { Subject, filter } from 'rxjs';
 import { Socket } from 'socket.io-client';
-import { v4 as uuidv4 } from 'uuid';
-import { ErrorWithCode } from '../error';
+import { Client } from './client';
+import { ConnExceptionFilter } from './conn.exception-filter';
 import { MessageWithType } from './conn.interface';
 
 @WebSocketGateway()
 export class ConnGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private logger = new ConsoleLogger(ConnGateway.name);
   private messages = new Subject<MessageWithType>();
-  private clientDisconnect = new Subject<Socket>();
+  private clientDisconnect = new Subject<Client>();
+  private clients = new Map<string, Client>();
 
-  handleConnection(client: Socket, ...args: any[]) {
-    console.log(`Client connected: ${client.id}`);
+  handleConnection(socket: Socket, ...args: any[]) {
+    Sentry.addBreadcrumb({
+      message: 'Client connected',
+      data: {
+        id: socket.id,
+      },
+    });
+    this.clients.set(socket.id, new Client(socket));
   }
 
-  handleDisconnect(client: Socket) {
-    console.log(`Client disconnected: ${client.id}`);
-    this.clientDisconnect.next(client);
+  handleDisconnect(socket: Socket) {
+    Sentry.addBreadcrumb({
+      message: 'Client disconnected',
+      data: {
+        id: socket.id,
+      },
+    });
+    const client = this.clients.get(socket.id);
+    if (client) {
+      this.clientDisconnect.next(client);
+    }
+    this.clients.delete(socket.id);
   }
 
+  @UseFilters(ConnExceptionFilter)
   @SubscribeMessage('message')
   handleMessage(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() socket: Socket,
     @MessageBody() payload: any,
   ): void {
     this.messages.next({
       type: payload.type,
       id: payload.id,
-      socket: client,
+      client: this.clients.get(socket.id),
       data: payload.data,
     });
-  }
-
-  sendMessage(client: Socket, type: string, data: any, id?: string) {
-    if (!id) {
-      id = uuidv4();
-    }
-    try {
-      client.emit('message', {
-        id,
-        type,
-        data,
-      });
-    } catch (e) {
-      this.logger.error('Gateway error: ', e);
-    }
-  }
-
-  sendErrorMessage(client: Socket, error: ErrorWithCode, id?: string) {
-    if (!id) {
-      id = uuidv4();
-    }
-
-    try {
-      client.emit('message', {
-        id,
-        type: 'error',
-        error: {
-          message: error.message,
-          code: error.code,
-        },
-      });
-    } catch (e) {
-      this.logger.error('Gateway error: ', e);
-    }
   }
 
   onMessage(type: string, callback: (message: MessageWithType) => void) {
@@ -81,7 +65,7 @@ export class ConnGateway implements OnGatewayConnection, OnGatewayDisconnect {
       .subscribe(callback);
   }
 
-  onClientDisconnect(callback: (client: Socket) => void) {
+  onClientDisconnect(callback: (client: Client) => void) {
     return this.clientDisconnect.subscribe(callback);
   }
 }
